@@ -7,11 +7,11 @@ An example plot of :class:`skltemplate.template.TemplateTransformer`
 """
 import numpy as np
 from matplotlib import pyplot as plt
-from skltemplate import TemplateTransformer
+from IsoKernel import IsoKernel
 
 X = np.arange(50, dtype=np.float).reshape(-1, 1)
 X /= 50
-estimator = TemplateTransformer()
+estimator = IsoKernel()
 X_transformed = estimator.fit_transform(X)
 
 plt.plot(X.flatten(), label='Original Data')
