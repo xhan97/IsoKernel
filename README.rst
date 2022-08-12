@@ -4,7 +4,7 @@
 IsoKernel
 ======================================================================
 
-IsoKernel - IsoKernel is a python library for Isolation Kernel. It includes several kernel using isolation mechanism.
+IsoKernel - IsoKernel is a python library for Isolation Kernel. It includes several kernel methods using isolation mechanism.
 
 
 Supported Kernel methods
