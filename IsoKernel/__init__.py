@@ -1,8 +1,6 @@
-from ._isokernel import TemplateEstimator
-from ._isokernel import TemplateClassifier
-from ._isokernel import IsoKernel
+from IsoKernel._isokernel import IsoKernel
+from IsoKernel._isodiskernel import IsoDisKernel
 
 from ._version import __version__
 
-__all__ = ['TemplateEstimator', 'TemplateClassifier', 'IsoKernel',
-           '__version__']
+__all__ = ['IsoKernel', 'IsoDisKernel', '__version__']
