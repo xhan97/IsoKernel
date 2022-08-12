@@ -104,7 +104,7 @@ or, if ``pytest`` is installed:
 
     pytest  IsoKernel/tests
 
-If one or more of the tests fail, please report a bug at https://github.com/xhan97/inne/issues
+If one or more of the tests fail, please report a bug at https://github.com/xhan97/IsoKernel/issues
 
 --------------
 Python Version
