@@ -63,7 +63,7 @@ supports input in a variety of formats: an array (or pandas dataframe) of shape 
     # get Isolation Kernel feature vector
     ik.transform(data)
     # get Isolation Kernel similarity
-    ik.similarly(data)
+    ik.similarity(data)
 
 ------------------
 How to use IsoDisKernel
@@ -86,7 +86,7 @@ It addresses two key issues of kernel mean embedding, where the kernel employed 
     # get kernel mean embedding
     idk.transform(D_i, D_j)
     # get similarity of two distributions
-    idk.similarly(D_i, D_j)
+    idk.similarity(D_i, D_j)
 
 -----------------
 Running the Tests
