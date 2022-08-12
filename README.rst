@@ -1,29 +1,17 @@
 
 .. -*- mode: rst -*-
 
-|PyPI|_  |Downloads|_  |Codecov|_ |CircleCI|_ 
-
-
-.. |PyPI| image:: https://badge.fury.io/py/inne.svg
-.. _PyPI: https://badge.fury.io/py/inne
-
-.. |Codecov| image:: https://codecov.io/gh/xhan97/inne/branch/master/graph/badge.svg
-.. _Codecov: https://codecov.io/gh/xhan97/inne
-
-.. |CircleCI| image:: https://circleci.com/gh/xhan97/inne.svg?style=shield&circle-token=:circle-token
-.. _CircleCI: https://circleci.com/gh/xhan97/tree/master
-
-.. |ReadTheDocs| image:: https://readthedocs.org/projects/inne/badge/?version=latest
-.. _ReadTheDocs: https://inne.readthedocs.io/en/latest/?badge=latest
-
-.. |Downloads| image:: https://pepy.tech/badge/inne
-.. _Downloads: https://pepy.tech/project/inne
-
-
-isoKernel
+IsoKernel
 ======================================================================
 
-isoKernel - Isolation Kernel.
+IsoKernel - IsoKernel is a python library for Isolation Kernel. It includes several kernel using isolation mechanism.
+
+
+Supported Kernel methods
+-----------------------------
+
+* Isolation Kernel (IsoKernel)
+* Isolation Distribution Kernel (IsoDisKernel)
 
 ----------
 Installing
@@ -31,48 +19,74 @@ Installing
 
 PyPI install, presuming you have an up to date pip.
 
-.. code:: bash
+.. .. code:: bash
 
-   pip install isoKernel
+..    pip install IsoKernel
 
 For a manual install of the latest code directly from GitHub:
 
 .. code:: bash
 
-    pip install git+https://github.com/xhan97/isoKernel.git
+    pip install git+https://github.com/xhan97/IsoKernel.git
 
 
 Alternatively download the package, install requirements, and manually run the installer:
 
 .. code:: bash
 
-    wget https://codeload.github.com/xhan97/isoKernel/zip/refs/heads/master
-    unzip isoKernel-master.zip
-    rm isoKernel-master.zip
-    cd isoKernel-master
+    wget https://codeload.github.com/xhan97/IsoKernel/zip/refs/heads/master
+    unzip IsoKernel-master.zip
+    rm IsoKernel-master.zip
+    cd IsoKernel-master
 
     pip install -r requirements.txt
 
     python setup.py install
 
 ------------------
-How to use isoKernel
+How to use IsoKernel
 ------------------
 
-The isoKernel package inherits from sklearn classes, and thus drops in neatly
+The IsoKernel package inherits from sklearn classes, and thus drops in neatly
 next to other sklearn  with an identical calling API. Similarly it
 supports input in a variety of formats: an array (or pandas dataframe) of shape ``(num_samples x num_features)``.
 
 .. code:: python
 
-    from inne import IsolationNNE
+    from IsoKernel import IsoKernel
     from sklearn.datasets import make_blobs
 
     data, _ = make_blobs(1000)
 
-    clf = IsolationNNE(n_estimators=200, max_samples=16)
-    clf.fit(data)
-    anomaly_labels = clf.predict(data)
+    ik = IsoKernel(n_estimators=200, max_samples=16)
+    ik = ik.fit(data)
+    # get Isolation Kernel feature vector
+    ik.transform(data)
+    # get Isolation Kernel similarity
+    ik.similarly(data)
+
+------------------
+How to use IsoDisKernel
+------------------
+Isolation Distributional Kernel is a new way to measure the similarity between two distributions.
+It addresses two key issues of kernel mean embedding, where the kernel employed has:
+    (i) a feature map with intractable dimensionality which leads to high computational cost;
+    (ii) data independency which leads to poor accuracy.
+.. code:: python
+
+    from IsoKernel import IsoDisKernel
+    from sklearn.datasets import make_blobs
+
+    data, _ = make_blobs(1000)
+
+    idk = IsoDisKernel(n_estimators=200, max_samples=16)
+    idk = ik.fit(data)
+    D_i = data[:10]
+    D_j = data[-10:]
+    # get kernel mean embedding
+    idk.transform(D_i, D_j)
+    # get similarity of two distributions
+    idk.similarly(D_i, D_j)
 
 -----------------
 Running the Tests
@@ -88,7 +102,7 @@ or, if ``pytest`` is installed:
 
 .. code:: bash
 
-    pytest  inne/tests
+    pytest  IsoKernel/tests
 
 If one or more of the tests fail, please report a bug at https://github.com/xhan97/inne/issues
 
@@ -104,6 +118,21 @@ Citing
 
 If you have used this codebase in a scientific publication and wish to
 cite it, please use the following publication (Bibtex format):
+
+.. code:: bibtex
+
+   @inproceedings{10.1145/3219819.3219990,
+        author = {Ting, Kai Ming and Zhu, Yue and Zhou, Zhi-Hua},
+        title = {Isolation Kernel and Its Effect on SVM},
+        year = {2018},
+        publisher = {Association for Computing Machinery},
+        address = {New York, NY, USA},
+        booktitle = {Proceedings of the 24th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining},
+        pages = {2329–2337},
+        numpages = {9},
+        location = {London, United Kingdom},
+        series = {KDD '18}
+        }
 
 .. code:: bibtex
 
