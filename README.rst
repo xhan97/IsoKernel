@@ -80,7 +80,7 @@ It addresses two key issues of kernel mean embedding, where the kernel employed 
     data, _ = make_blobs(1000)
 
     idk = IsoDisKernel(n_estimators=200, max_samples=16)
-    idk = ik.fit(data)
+    idk = idk.fit(data)
     D_i = data[:10]
     D_j = data[-10:]
     # get kernel mean embedding
