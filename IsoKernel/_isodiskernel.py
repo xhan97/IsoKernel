@@ -88,7 +88,7 @@ class IsoDisKernel(TransformerMixin, BaseEstimator):
         return self
 
     def _kernel_mean_embedding(self, X):
-        return np.sum(X, axis=0)/X.shape[0]
+        return np.mean(X, axis=0)
 
     def similarity(self, D_i, D_j, is_normalize=False):
         """ Compute the isolation distribution kernel of D_i and D_j.
