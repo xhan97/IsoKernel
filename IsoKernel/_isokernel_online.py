@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import numbers
-from warnings import warn
+
+import random
 
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -25,7 +25,7 @@ MAX_INT = np.iinfo(np.int32).max
 MIN_FLOAT = np.finfo(float).eps
 
 
-class IsoKernel(TransformerMixin, BaseEstimator):
+class IsoKernelOnline(TransformerMixin, BaseEstimator):
     """  Build Isolation Kernel feature vector representations via the feature map
     for a given dataset.
 
@@ -79,73 +79,32 @@ class IsoKernel(TransformerMixin, BaseEstimator):
         self.n_estimators = n_estimators
         self.max_samples = max_samples
         self.random_state = random_state
+        self.n_instance = 0
+        self.center_data = None
 
-    def fit(self, X, y=None):
-        """ Fit the model on data X.
-        Parameters
-        ----------
-        X : np.array of shape (n_samples, n_features)
-            The input instances.
-        Returns
-        -------
-        self : object
-        """
+    def add_observation(self, x):
 
-        X = check_array(X)
-        n_samples = X.shape[0]
-        if isinstance(self.max_samples, str):
-            if self.max_samples == "auto":
-                max_samples = min(16, n_samples)
-            else:
-                raise ValueError(
-                    "max_samples (%s) is not supported."
-                    'Valid choices are: "auto", int or'
-                    "float"
-                    % self.max_samples
-                )
-        elif isinstance(self.max_samples, numbers.Integral):
-            if self.max_samples > n_samples:
-                warn(
-                    "max_samples (%s) is greater than the "
-                    "total number of samples (%s). max_samples "
-                    "will be set to n_samples for estimation."
-                    % (self.max_samples, n_samples)
-                )
-                max_samples = n_samples
-            else:
-                max_samples = self.max_samples
-        else:  # float
-            if not 0.0 < self.max_samples <= 1.0:
-                raise ValueError(
-                    "max_samples must be in (0, 1], got %r" % self.max_samples
-                )
-            max_samples = int(self.max_samples * X.shape[0])
-        self.max_samples_ = max_samples
-        self._fit(X)
-        self.is_fitted_ = True
-        return self
-
-    def _fit(self, X):
-        n_samples = X.shape[0]
-        self.max_samples = min(self.max_samples_, n_samples)
-        random_state = check_random_state(self.random_state)
-        self._seeds = random_state.randint(MAX_INT, size=self.n_estimators)
-
+        if not self.center_data:
+            self.center_data = [[]for i in range(self.n_estimators)]
         for i in range(self.n_estimators):
-            rnd = check_random_state(self._seeds[i])
-            center_index = rnd.choice(
-                n_samples, self.max_samples_, replace=False)
-            if i == 0:
-                self.center_index_set = np.array([center_index])
-            else:
-                self.center_index_set = np.append(
-                    self.center_index_set, np.array([center_index]), axis=0)
-        self.unique_index = np.unique(self.center_index_set)
-        self.center_data = X[self.unique_index]
+            self.center_data[i] = self.update_center(
+                self.center_data[i], self.max_samples, x)
+        self.n_instance += 1
+
         return self
+
+    def update_center(self, center_data, m, x):
+        if self.n_instance <= m-1:
+            center_data.append(x)
+        else:
+            i = random.randint(1, self.n_instance)
+            if i <= m:
+                j = random.randint(1, m) - 1
+                center_data[j] = x
+        return center_data
 
     def similarity(self, X):
-        """ Compute the isolation kernel simalarity matrix of X.
+        """ Compute the isolation kernel similarity matrix of X.
         Parameters
         ----------
         X: array-like of shape (n_instances, n_features)
@@ -170,24 +129,17 @@ class IsoKernel(TransformerMixin, BaseEstimator):
         The features are organised as a n_instances by psi*t matrix.
         """
 
-        check_is_fitted(self)
+        # check_is_fitted(self)
         X = check_array(X)
-        n, m = X.shape
-        X_dists = euclidean_distances(X, self.center_data)
-
-        for i in range(n):
-            mapping_array = np.zeros(self.unique_index.max() + 1,
-                                     dtype=X_dists.dtype)
-            mapping_array[self.unique_index] = X_dists[i]
-            x_center_dist_mat = mapping_array[self.center_index_set]
-
-            nearest_center_index = np.argmin(x_center_dist_mat, axis=1)
-            ik_value = np.eye(self.max_samples_, dtype=int)[
-                nearest_center_index].flatten()[np.newaxis]
+        for i in range(self.n_estimators):
+            x_center_dist = euclidean_distances(X, self.center_data[i])
+            nearest_center_index = np.argmin(x_center_dist, axis=1)
+            ik_value = np.eye(self.max_samples, dtype=int)[
+                nearest_center_index]
             if i == 0:
                 embedding = ik_value
             else:
-                embedding = np.append(embedding, ik_value, axis=0)
-
+                embedding = np.append(embedding, ik_value, axis=1)
         return embedding
+    
     

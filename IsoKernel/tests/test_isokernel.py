@@ -23,6 +23,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 # if isokernel is installed, no need to use the following line
 from IsoKernel import IsoKernel
 from IsoKernel import IsoDisKernel
+from IsoKernel._isokernel_online import IsoKernelOnline
 
 @pytest.fixture
 def data():
@@ -60,3 +61,12 @@ def test_isodiskernel_similarity(data):
     D_i = X[:10]
     D_j = X[-10:]
     print(idk.similarity(D_i, D_j))
+
+def test_isodiskernel_online(data):
+
+    X, y = data
+    ol_ik = IsoKernelOnline(n_estimators=200, max_samples=3)
+    for i, item in enumerate(X):
+        ol_ik.add_observation(item)
+	
+    print(ol_ik.similarity(X))
