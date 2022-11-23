@@ -174,19 +174,14 @@ class IsoKernel(TransformerMixin, BaseEstimator):
         X = check_array(X)
         n, m = X.shape
         X_dists = euclidean_distances(X, self.center_data)
+        embedding = np.zeros([n, self.max_samples_ * self.n_estimators])
 
         for i in range(n):
             mapping_array = np.zeros(self.unique_index.max() + 1,
                                      dtype=X_dists.dtype)
             mapping_array[self.unique_index] = X_dists[i]
             x_center_dist_mat = mapping_array[self.center_index_set]
-
             nearest_center_index = np.argmin(x_center_dist_mat, axis=1)
-            ik_value = np.eye(self.max_samples_, dtype=int)[
-                nearest_center_index].flatten()[np.newaxis]
-            if i == 0:
-                embedding = ik_value
-            else:
-                embedding = np.append(embedding, ik_value, axis=0)
-
+            flatten_index = nearest_center_index + self.max_samples_ * np.array([range(self.n_estimators)])
+            embedding[i][flatten_index] = 1.0
         return embedding
