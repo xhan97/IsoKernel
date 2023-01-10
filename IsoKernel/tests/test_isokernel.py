@@ -50,7 +50,7 @@ def test_isodiskernel_transform(data):
     idk = idk.fit(X)
     D_i = X[:10]
     D_j = X[-10:]
-    print(idk.transform(D_i, D_j))
+    print(idk._transform(D_i, D_j))
 
 
 def test_isodiskernel_similarity(data):
@@ -60,3 +60,5 @@ def test_isodiskernel_similarity(data):
     D_i = X[:10]
     D_j = X[-10:]
     print(idk.similarity(D_i, D_j))
+    print(idk.ik_feature)
+    print(idk.kme)

@@ -20,7 +20,7 @@ import numpy as np
 import math
 
 
-class IsoDisKernel(TransformerMixin, BaseEstimator):
+class IsoDisKernel(BaseEstimator):
     """Isolation Distributional Kernel is a new way to measure the similarity between two distributions.
 
     It addresses two key issues of kernel mean embedding, where the kernel employed has: 
@@ -61,7 +61,6 @@ class IsoDisKernel(TransformerMixin, BaseEstimator):
     >>> idk = IsoDisKernel.fit(X)
     >>> D_i = [[0.4,0.3], [0.3,0.8]]
     >>> D_j = [[0.5, 0.4], [0.5, 0.1]]
-    >>> idk.transform(D_i, D_j)
     >>> idk.similarity(D_j, D_j)
     """
 
@@ -90,6 +89,24 @@ class IsoDisKernel(TransformerMixin, BaseEstimator):
     def _kernel_mean_embedding(self, X):
         return np.mean(X, axis=0)
 
+    @property
+    def ik_feature(self):
+        """ Get Isolation Kernel  feature of two distributions.
+        Returns
+        -------
+        The Isolation kernel features of given two dataset.
+        """
+        return self.emb_D_i, self.emb_D_j
+
+    @property
+    def kme(self):
+        """ Get kernel mean embedding of two distributions.
+        Returns
+        -------
+        The isolation kernel mean embedding of given two dataset.
+        """
+        return self.kme_D_i, self.kme_D_j
+
     def similarity(self, D_i, D_j, is_normalize=False):
         """ Compute the isolation distribution kernel of D_i and D_j.
         Parameters
@@ -103,14 +120,14 @@ class IsoDisKernel(TransformerMixin, BaseEstimator):
         -------
         The Isolation distribution similarity of given two dataset.
         """
-        emb_D_i, emb_D_j = self.transform(D_i, D_j)
-        kme_D_i, kme_D_j = self._kernel_mean_embedding(
-            emb_D_i), self._kernel_mean_embedding(emb_D_j)
+        self.emb_D_i, self.emb_D_j = self._transform(D_i, D_j)
+        self.kme_D_i, self.kme_D_j = self._kernel_mean_embedding(
+            self.emb_D_i), self._kernel_mean_embedding(self.emb_D_j)
         if is_normalize:
-            return np.dot(kme_D_i, kme_D_j)/(math.sqrt(np.dot(kme_D_i, kme_D_i)) * math.sqrt(np.dot(kme_D_j, kme_D_j)))
-        return np.dot(kme_D_i, kme_D_j) / self.n_estimators
+            return np.dot(self.kme_D_i, self.kme_D_j)/(math.sqrt(np.dot(self.kme_D_i, self.kme_D_i)) * math.sqrt(np.dot(self.kme_D_j, self.kme_D_j)))
+        return np.dot(self.kme_D_i, self.kme_D_j) / self.n_estimators
 
-    def transform(self, D_i, D_j):
+    def _transform(self, D_i, D_j):
         """ Compute the isolation kernel feature of D_i and D_j.
         Parameters
         ----------
