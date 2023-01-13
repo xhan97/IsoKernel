@@ -86,26 +86,13 @@ class IsoDisKernel(BaseEstimator):
         self.is_fitted_ = True
         return self
 
-    def _kernel_mean_embedding(self, X):
+    def kernel_mean_embedding(self, X):
         return np.mean(X, axis=0)
 
-    @property
-    def ik_feature(self):
-        """ Get Isolation Kernel  feature of two distributions.
-        Returns
-        -------
-        The Isolation kernel features of given two dataset.
-        """
-        return self.emb_D_i, self.emb_D_j
-
-    @property
-    def kme(self):
-        """ Get kernel mean embedding of two distributions.
-        Returns
-        -------
-        The isolation kernel mean embedding of given two dataset.
-        """
-        return self.kme_D_i, self.kme_D_j
+    def kme_similarity(self, kme_D_i, kme_D_j,  is_normalize=False):
+        if is_normalize:
+            return np.dot(kme_D_i, kme_D_j)/(math.sqrt(np.dot(kme_D_i, kme_D_i)) * math.sqrt(np.dot(kme_D_j, kme_D_j)))
+        return np.dot(kme_D_i, kme_D_j) / self.n_estimators
 
     def similarity(self, D_i, D_j, is_normalize=False):
         """ Compute the isolation distribution kernel of D_i and D_j.
@@ -120,14 +107,12 @@ class IsoDisKernel(BaseEstimator):
         -------
         The Isolation distribution similarity of given two dataset.
         """
-        self.emb_D_i, self.emb_D_j = self._transform(D_i, D_j)
-        self.kme_D_i, self.kme_D_j = self._kernel_mean_embedding(
-            self.emb_D_i), self._kernel_mean_embedding(self.emb_D_j)
-        if is_normalize:
-            return np.dot(self.kme_D_i, self.kme_D_j)/(math.sqrt(np.dot(self.kme_D_i, self.kme_D_i)) * math.sqrt(np.dot(self.kme_D_j, self.kme_D_j)))
-        return np.dot(self.kme_D_i, self.kme_D_j) / self.n_estimators
+        emb_D_i, emb_D_j = self.transform(D_i, D_j)
+        kme_D_i, kme_D_j = self.kernel_mean_embedding(
+            emb_D_i), self.kernel_mean_embedding(emb_D_j)
+        return self.kme_similarity(kme_D_i, kme_D_j, is_normalize=is_normalize)
 
-    def _transform(self, D_i, D_j):
+    def transform(self, D_i, D_j):
         """ Compute the isolation kernel feature of D_i and D_j.
         Parameters
         ----------

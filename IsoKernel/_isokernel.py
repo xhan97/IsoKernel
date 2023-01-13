@@ -145,7 +145,7 @@ class IsoKernel(TransformerMixin, BaseEstimator):
         return self
 
     def similarity(self, X):
-        """ Compute the isolation kernel simalarity matrix of X.
+        """ Compute the isolation kernel pairwise simalarity matrix of X.
         Parameters
         ----------
         X: array-like of shape (n_instances, n_features)

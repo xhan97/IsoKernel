@@ -50,7 +50,7 @@ def test_isodiskernel_transform(data):
     idk = idk.fit(X)
     D_i = X[:10]
     D_j = X[-10:]
-    print(idk._transform(D_i, D_j))
+    print(idk.transform(D_i, D_j))
 
 
 def test_isodiskernel_similarity(data):
@@ -59,6 +59,10 @@ def test_isodiskernel_similarity(data):
     idk = idk.fit(X)
     D_i = X[:10]
     D_j = X[-10:]
+    
+    ikm_D_i, ikm_D_j = idk.transform(D_i, D_j)
+    # get kernel mean embedding 
+    kme_D_i, kme_D_j = idk.kernel_mean_embedding(ikm_D_i), idk.kernel_mean_embedding(ikm_D_j)
+    # get similarity between two distributions.
     print(idk.similarity(D_i, D_j))
-    print(idk.ik_feature)
-    print(idk.kme)
+    print(idk.kme_similarity(kme_D_i, kme_D_j))
