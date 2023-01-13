@@ -60,9 +60,9 @@ supports input in a variety of formats: an array (or pandas dataframe) of shape 
 
     ik = IsoKernel(n_estimators=200, max_samples=16)
     ik = ik.fit(data)
-    # get Isolation Kernel feature vector
+    # get Isolation Kernel feature for all points in data.
     ik.transform(data)
-    # get Isolation Kernel similarity
+    # get pairwise Isolation Kernel similarity for all points in data.
     ik.similarity(data)
 
 ------------------
@@ -83,12 +83,16 @@ It addresses two key issues of kernel mean embedding, where the kernel employed 
     idk = idk.fit(data)
     D_i = data[:10]
     D_j = data[-10:]
-    # get similarity of two distributions
+
+    # Directly get the similarity between two distributions 
     sim = idk.similarity(D_i, D_j)
-    # get ik feature
-    ikm_D_i, ikm_D_j = idk.ik_feature
-    # get kernel mean embedding
-    kme_D_i, kme_D_j = idk.kme
+    
+    # get ik feature of two distributions
+    ikm_D_i, ikm_D_j = idk.transform(D_i, D_j)
+    # get kernel mean embedding 
+    kme_D_i, kme_D_j = idk.kernel_mean_embedding(ikm_D_i), idk.kernel_mean_embedding(ikm_D_j)
+    # get similarity between two distributions.
+    sim = ik.kme_similarity(kme_D_i, kme_D_j)
 
 -----------------
 Running the Tests
