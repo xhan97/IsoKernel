@@ -94,7 +94,7 @@ class IsoDisKernel(BaseEstimator):
             return np.dot(kme_D_i, kme_D_j)/(math.sqrt(np.dot(kme_D_i, kme_D_i)) * math.sqrt(np.dot(kme_D_j, kme_D_j)))
         return np.dot(kme_D_i, kme_D_j) / self.n_estimators
 
-    def similarity(self, D_i, D_j, is_normalize=False):
+    def similarity(self, D_i, D_j, is_normalize=True):
         """ Compute the isolation distribution kernel of D_i and D_j.
         Parameters
         ----------

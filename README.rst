@@ -84,14 +84,16 @@ It addresses two key issues of kernel mean embedding, where the kernel employed 
     D_i = data[:10]
     D_j = data[-10:]
     # Directly get the similarity between two distributions 
-    sim = idk.similarity(D_i, D_j)
+    # is_normalize: whether return the normalized similarity matrix ranged of [0,1]. Default: True
+    sim = idk.similarity(D_i, D_j, is_normalize=True)
 
     # get ik feature of two distributions
     ikm_D_i, ikm_D_j = idk.transform(D_i, D_j)
     # get kernel mean embedding 
-    kme_D_i, kme_D_j = idk.kernel_mean_embedding(ikm_D_i), idk.kernel_mean_embedding(ikm_D_j)
+    kme_D_i = idk.kernel_mean_embedding(ikm_D_i)
+    kme_D_j = idk.kernel_mean_embedding(ikm_D_j)
     # get similarity between two distributions.
-    sim = idk.kme_similarity(kme_D_i, kme_D_j)
+    sim = idk.kme_similarity(kme_D_i, kme_D_j, is_normalize=True)
 
 -----------------
 Running the Tests
