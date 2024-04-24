@@ -13,7 +13,7 @@ Supported Kernel methods
 * Isolation Kernel (IsoKernel)
 * Isolation Distribution Kernel (IsoDisKernel)
 
-----------
+
 Installing
 ----------
 
@@ -43,9 +43,10 @@ Alternatively download the package, install requirements, and manually run the i
 
     python setup.py install
 
-------------------
+
+
 How to use IsoKernel
-------------------
+-------------------------
 
 The IsoKernel package inherits from sklearn classes, and thus drops in neatly
 next to other sklearn  with an identical calling API. Similarly it
@@ -65,13 +66,15 @@ supports input in a variety of formats: an array (or pandas dataframe) of shape 
     # get pairwise Isolation Kernel similarity for all points in data.
     ik.similarity(data)
 
-------------------
+
 How to use IsoDisKernel
-------------------
+-------------------------------
+
 Isolation Distributional Kernel is a new way to measure the similarity between two distributions.
 It addresses two key issues of kernel mean embedding, where the kernel employed has:
     (i) a feature map with intractable dimensionality which leads to high computational cost;
     (ii) data independency which leads to poor accuracy.
+
 .. code:: python
 
     from IsoKernel import IsoDisKernel
@@ -95,9 +98,9 @@ It addresses two key issues of kernel mean embedding, where the kernel employed 
     # get similarity between two distributions.
     sim = idk.kme_similarity(kme_D_i, kme_D_j, is_normalize=True)
 
------------------
+
 Running the Tests
------------------
+---------------------------
 
 The package tests can be run after installation using the command:
 
@@ -113,15 +116,15 @@ or, if ``pytest`` is installed:
 
 If one or more of the tests fail, please report a bug at https://github.com/xhan97/IsoKernel/issues
 
---------------
+
 Python Version
---------------
+------------------------
 
 Python 3  is recommend  the better option if it is available to you.
 
-------
+
 Citing
-------
+------------------------
 
 If you have used this codebase in a scientific publication and wish to
 cite it, please use the following publication (Bibtex format):
