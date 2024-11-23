@@ -58,7 +58,7 @@ supports input in a variety of formats: an array (or pandas dataframe) of shape 
 
     data, _ = make_blobs(1000)
 
-    ik = IsoKernel(n_estimators=200, max_samples=16)
+    ik = IsoKernel(n_estimators=200, max_samples=16, method="anne") # method can be "anne" or "inne"
     ik = ik.fit(data)
     # get Isolation Kernel feature vector
     ik.transform(data)
@@ -79,7 +79,7 @@ It addresses two key issues of kernel mean embedding, where the kernel employed 
 
     data, _ = make_blobs(1000)
 
-    idk = IsoDisKernel(n_estimators=200, max_samples=16)
+    idk = IsoDisKernel(n_estimators=200, max_samples=16, method="anne") # method can be "anne" or "inne"
     idk = idk.fit(data)
     D_i = data[:10]
     D_j = data[-10:]
@@ -96,7 +96,7 @@ The package tests can be run after installation using the command:
 
 .. code:: bash
 
-    pip install pytest 
+    pip install pytest
 
 or, if ``pytest`` is installed:
 
