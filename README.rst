@@ -13,7 +13,7 @@ Supported Kernel methods
 * Isolation Kernel (IsoKernel)
 * Isolation Distribution Kernel (IsoDisKernel)
 
-----------
+
 Installing
 ----------
 
@@ -43,9 +43,10 @@ Alternatively download the package, install requirements, and manually run the i
 
     python setup.py install
 
-------------------
+
+
 How to use IsoKernel
-------------------
+-------------------------
 
 The IsoKernel package inherits from sklearn classes, and thus drops in neatly
 next to other sklearn  with an identical calling API. Similarly it
@@ -60,18 +61,20 @@ supports input in a variety of formats: an array (or pandas dataframe) of shape 
 
     ik = IsoKernel(n_estimators=200, max_samples=16, method="anne") # method can be "anne" or "inne"
     ik = ik.fit(data)
-    # get Isolation Kernel feature vector
+    # get Isolation Kernel feature for all points in data.
     ik.transform(data)
-    # get Isolation Kernel similarity
+    # get pairwise Isolation Kernel similarity for all points in data.
     ik.similarity(data)
 
-------------------
+
 How to use IsoDisKernel
-------------------
+-------------------------------
+
 Isolation Distributional Kernel is a new way to measure the similarity between two distributions.
 It addresses two key issues of kernel mean embedding, where the kernel employed has:
     (i) a feature map with intractable dimensionality which leads to high computational cost;
     (ii) data independency which leads to poor accuracy.
+
 .. code:: python
 
     from IsoKernel import IsoDisKernel
@@ -83,14 +86,21 @@ It addresses two key issues of kernel mean embedding, where the kernel employed 
     idk = idk.fit(data)
     D_i = data[:10]
     D_j = data[-10:]
-    # get kernel mean embedding
-    idk.transform(D_i, D_j)
-    # get similarity of two distributions
-    idk.similarity(D_i, D_j)
+    # Directly get the similarity between two distributions 
+    # is_normalize: whether return the normalized similarity matrix ranged of [0,1]. Default: True
+    sim = idk.similarity(D_i, D_j, is_normalize=True)
 
------------------
+    # get ik feature of two distributions
+    ikm_D_i, ikm_D_j = idk.transform(D_i, D_j)
+    # get kernel mean embedding 
+    kme_D_i = idk.kernel_mean_embedding(ikm_D_i)
+    kme_D_j = idk.kernel_mean_embedding(ikm_D_j)
+    # get similarity between two distributions.
+    sim = idk.kme_similarity(kme_D_i, kme_D_j, is_normalize=True)
+
+
 Running the Tests
------------------
+---------------------------
 
 The package tests can be run after installation using the command:
 
@@ -106,15 +116,15 @@ or, if ``pytest`` is installed:
 
 If one or more of the tests fail, please report a bug at https://github.com/xhan97/IsoKernel/issues
 
---------------
+
 Python Version
---------------
+------------------------
 
 Python 3  is recommend  the better option if it is available to you.
 
-------
+
 Citing
-------
+------------------------
 
 If you have used this codebase in a scientific publication and wish to
 cite it, please use the following publication (Bibtex format):
@@ -147,6 +157,24 @@ cite it, please use the following publication (Bibtex format):
         numpages = {9},
         series = {KDD '20}
     }
+
+.. code:: bibtex
+
+    @inproceedings{HZTZL22Streaming,
+     author = {Han, Xin and Zhu, Ye and Ting, Kai Ming and Zhan, De-Chuan and Li, Gang},
+     title = {Streaming Hierarchical Clustering Based on Point-Set Kernel},
+     year = {2022},
+     isbn = {9781450393850},
+     publisher = {Association for Computing Machinery},
+     address = {New York, NY, USA},
+     url = {https://doi.org/10.1145/3534678.3539323},
+     doi = {10.1145/3534678.3539323},
+     pages = {525–533},
+     numpages = {9},
+     keywords = {streaming data, hierarchical clustering, isolation kernel},
+     location = {Washington DC, USA},
+     series = {KDD '22}
+}
 
 License
 -------
