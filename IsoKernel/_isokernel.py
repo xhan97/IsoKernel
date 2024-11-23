@@ -1,32 +1,27 @@
-# Copyright 2022 Xin Han
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+"""
+isoml (c) by Xin Han
+
+isoml is licensed under a
+Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License.
+
+You should have received a copy of the license along with this
+work. If not, see <https://creativecommons.org/licenses/by-nc-nd/4.0/>.
+"""
 
 import numbers
 from warnings import warn
-
-import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.metrics import euclidean_distances
+import scipy.sparse as sp
 from sklearn.utils import check_array
-from sklearn.utils.validation import check_is_fitted, check_random_state
-
-MAX_INT = np.iinfo(np.int32).max
-MIN_FLOAT = np.finfo(float).eps
+from sklearn.utils.validation import check_is_fitted
+from sklearn.utils.extmath import safe_sparse_dot
+from sklearn.base import BaseEstimator, TransformerMixin
+from _ik_anne import IK_ANNE
+from _ik_iforest import IK_IForest
+from _ik_inne import IK_INNE
 
 
 class IsoKernel(TransformerMixin, BaseEstimator):
-    """  Build Isolation Kernel feature vector representations via the feature map
+    """Build Isolation Kernel feature vector representations via the feature map
     for a given dataset.
 
     Isolation kernel is a data dependent kernel measure that is
@@ -42,8 +37,12 @@ class IsoKernel(TransformerMixin, BaseEstimator):
 
     Parameters
     ----------
+    method : str, default="anne"
+        The method to compute the isolation kernel feature. The available methods are: `anne`, `inne`, and `iforest`.
+
     n_estimators : int, default=200
         The number of base estimators in the ensemble.
+
 
     max_samples : int, default="auto"
         The number of samples to draw from X to train each base estimator.
@@ -67,21 +66,25 @@ class IsoKernel(TransformerMixin, BaseEstimator):
 
     Examples
     --------
-    >>> from IsoKernel import IsoKernel
+    >>> from isoml.kernel import IsoKernel
     >>> import numpy as np
     >>> X = [[0.4,0.3], [0.3,0.8], [0.5, 0.4], [0.5, 0.1]]
-    >>> ik = IsoKernel.fit(X)
+    >>> iso_kernel = IsoKernel(n_estimators=200, max_samples=3, method="anne")
+    >>> ik = iso_kernel.fit(X)
     >>> ik.transform(X)
     >>> ik.similarity(X)
     """
 
-    def __init__(self, n_estimators=200, max_samples="auto", random_state=None) -> None:
+    def __init__(
+        self, method="anne", n_estimators=200, max_samples="auto", random_state=None
+    ) -> None:
         self.n_estimators = n_estimators
         self.max_samples = max_samples
         self.random_state = random_state
+        self.method = method
 
     def fit(self, X, y=None):
-        """ Fit the model on data X.
+        """Fit the model on data X.
         Parameters
         ----------
         X : np.array of shape (n_samples, n_features)
@@ -100,8 +103,7 @@ class IsoKernel(TransformerMixin, BaseEstimator):
                 raise ValueError(
                     "max_samples (%s) is not supported."
                     'Valid choices are: "auto", int or'
-                    "float"
-                    % self.max_samples
+                    "float" % self.max_samples
                 )
         elif isinstance(self.max_samples, numbers.Integral):
             if self.max_samples > n_samples:
@@ -121,49 +123,57 @@ class IsoKernel(TransformerMixin, BaseEstimator):
                 )
             max_samples = int(self.max_samples * X.shape[0])
         self.max_samples_ = max_samples
-        self._fit(X)
+
+        if self.method == "anne":
+            self.iso_kernel_ = IK_ANNE(
+                self.n_estimators, self.max_samples_, self.random_state
+            )
+        elif self.method == "inne":
+            self.iso_kernel_ = IK_INNE(
+                self.n_estimators, self.max_samples_, self.random_state
+            )
+        elif self.method == "iforest":
+            self.iso_kernel_ = IK_IForest(
+                self.n_estimators, self.max_samples_, self.random_state
+            )
+        else:
+            raise ValueError(
+                "method (%s) is not supported."
+                'Valid choices are: "anne", "inne" or "iforest"' % self.method
+            )
+
+        self.iso_kernel_.fit(X)
         self.is_fitted_ = True
         return self
 
-    def _fit(self, X):
-        n_samples = X.shape[0]
-        self.max_samples = min(self.max_samples_, n_samples)
-        random_state = check_random_state(self.random_state)
-        self._seeds = random_state.randint(MAX_INT, size=self.n_estimators)
-
-        for i in range(self.n_estimators):
-            rnd = check_random_state(self._seeds[i])
-            center_index = rnd.choice(
-                n_samples, self.max_samples_, replace=False)
-            if i == 0:
-                self.center_index_set = np.array([center_index])
-            else:
-                self.center_index_set = np.append(
-                    self.center_index_set, np.array([center_index]), axis=0)
-        self.unique_index = np.unique(self.center_index_set)
-        self.center_data = X[self.unique_index]
-        return self
-
-    def similarity(self, X):
-        """ Compute the isolation kernel simalarity matrix of X.
+    def similarity(self, X, dense_output=True):
+        """Compute the isolation kernel similarity matrix of X.
         Parameters
         ----------
         X: array-like of shape (n_instances, n_features)
             The input instances.
+        dense_output: bool, default=True
+            Whether to return dense matrix of output.
         Returns
         -------
         The simalarity matrix are organised as a n_instances * n_instances matrix.
         """
-
+        check_is_fitted(self)
+        X = check_array(X)
         embed_X = self.transform(X)
-        return np.inner(embed_X, embed_X) / self.n_estimators
+        return (
+            safe_sparse_dot(embed_X, embed_X.T, dense_output=dense_output)
+            / self.n_estimators
+        )
 
-    def transform(self, X):
-        """ Compute the isolation kernel feature of X.
+    def transform(self, X, dense_output=False):
+        """Compute the isolation kernel feature of X.
         Parameters
         ----------
         X: array-like of shape (n_instances, n_features)
             The input instances.
+        dense_output: bool, default=False
+            Whether to return dense matrix of output.
         Returns
         -------
         The finite binary features based on the kernel feature map.
@@ -172,22 +182,10 @@ class IsoKernel(TransformerMixin, BaseEstimator):
 
         check_is_fitted(self)
         X = check_array(X)
-        n, m = X.shape
-        X_dists = euclidean_distances(X, self.center_data)
-
-        for i in range(n):
-            mapping_array = np.zeros(self.unique_index.max() + 1,
-                                     dtype=X_dists.dtype)
-            mapping_array[self.unique_index] = X_dists[i]
-            x_center_dist_mat = mapping_array[self.center_index_set]
-
-            nearest_center_index = np.argmin(x_center_dist_mat, axis=1)
-            ik_value = np.eye(self.max_samples_, dtype=int)[
-                nearest_center_index].flatten()[np.newaxis]
-            if i == 0:
-                embedding = ik_value
+        X_trans = self.iso_kernel_.transform(X)
+        if dense_output:
+            if sp.issparse(X_trans) and hasattr(X_trans, "toarray"):
+                return X_trans.toarray()
             else:
-                embedding = np.append(embedding, ik_value, axis=0)
-
-        return embedding
-    
+                warn("The IsoKernel transform output is already dense.")
+        return X_trans
