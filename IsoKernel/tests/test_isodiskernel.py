@@ -4,7 +4,14 @@ Use of this source code is governed by a BSD-style
 license that can be found in the LICENSE file.
 """
 
+import os
+import sys
 from sklearn.datasets import load_iris
+
+# temporary solution for relative imports in case pyod is not installed
+# if pyod is installed, no need to use the following line
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from IsoKernel._isodiskernel import IsoDisKernel
 import pytest
 

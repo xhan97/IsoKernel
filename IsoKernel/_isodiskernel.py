@@ -14,7 +14,7 @@ import scipy.sparse as sp
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
-from _isokernel import IsoKernel
+from ._isokernel import IsoKernel
 
 
 class IsoDisKernel(BaseEstimator, TransformerMixin):

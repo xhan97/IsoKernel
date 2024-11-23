@@ -15,9 +15,9 @@ from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.base import BaseEstimator, TransformerMixin
-from _ik_anne import IK_ANNE
-from _ik_iforest import IK_IForest
-from _ik_inne import IK_INNE
+from ._ik_anne import IK_ANNE
+from ._ik_iforest import IK_IForest
+from ._ik_inne import IK_INNE
 
 
 class IsoKernel(TransformerMixin, BaseEstimator):
